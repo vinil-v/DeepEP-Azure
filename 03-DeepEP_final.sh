@@ -11,9 +11,8 @@ export PYTHONPATH=$PWD/build/lib.linux-x86_64-3.10:$PYTHONPATH
 python3 -c "import deep_ep"
 python3 tests/test_intranode.py
 echo "Applying patch to DeepEP"
-cp run.sh ~/DeepEP
-cp diff_deepep ~/DeepEP
-cd ~/DeepEP
+cp ~/DeepEP-Azure-buildsuite/run.sh ~/DeepEP
+cp ~/DeepEP-Azure-buildsuite/diff_deepep ~/DeepEP
 git apply diff_deepep
 rm deep_ep_cpp.cpython-310-x86_64-linux-gnu.so
 export NVSHMEM_DIR=/opt/nvshmem/

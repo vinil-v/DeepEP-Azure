@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # === CONFIGURATION ===
-MASTER_ADDR="10.233.0.5"       # IP of the rank 0 node (can be IB IP)
+MASTER_ADDR="xx.xx.xx.xx"       # IP of the rank 0 node (can be IB IP)
 MASTER_PORT=4571             # Use a free port
 WORLD_SIZE=2                 # Number of nodes in total
 RANK=$1                      # This node's rank (0 or 1)
