@@ -1,0 +1,16 @@
+#!/bin/sh
+cd ~/nvshmem_src/
+CUDA_HOME=/usr/local/cuda \
+GDRCOPY_HOME=/opt/gdrcopy \
+NVSHMEM_SHMEM_SUPPORT=0 \
+NVSHMEM_UCX_SUPPORT=0 \
+NVSHMEM_USE_NCCL=0 \
+NVSHMEM_MPI_SUPPORT=0 \
+NVSHMEM_IBGDA_SUPPORT=1 \
+NVSHMEM_PMIX_SUPPORT=0 \
+NVSHMEM_TIMEOUT_DEVICE_POLLING=0 \
+NVSHMEM_USE_GDRCOPY=1 \
+cmake -S . -B build/ -DCMAKE_INSTALL_PREFIX=/opt/nvshmem
+cd build
+make -j$(nproc)
+make install
