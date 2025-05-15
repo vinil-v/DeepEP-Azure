@@ -109,19 +109,19 @@ sh run.sh 1
 
 **Before Applying Fix:**
 
-```
-FP8:  19.37 GB/s (RDMA), 63.23 GB/s (NVL)
-BF16: 21.81 GB/s (RDMA), 71.19 GB/s (NVL)
+```bash
+[tuning] Best dispatch (FP8): SMs 24, NVL chunk 28, RDMA chunk 32: 19.37 GB/s (RDMA), 63.23 GB/s (NVL)
+[tuning] Best dispatch (BF16): SMs 24, NVL chunk 24, RDMA chunk 32: 21.81 GB/s (RDMA), 71.19 GB/s (NVL)
+[tuning] Best combine: SMs 24, NVL chunk 4, RDMA chunk 32: 20.95 GB/s (RDMA), 68.38 GB/s (NVL)
 ```
 
 **After Applying Fix:**
 
+```bash
+[tuning] Best dispatch (FP8): SMs 24, NVL chunk 28, RDMA chunk 16: 45.97 GB/s (RDMA), 150.04 GB/s (NVL)
+[tuning] Best dispatch (BF16): SMs 24, NVL chunk 20, RDMA chunk 12: 60.33 GB/s (RDMA), 196.91 GB/s (NVL)
+[tuning] Best combine: SMs 24, NVL chunk 4, RDMA chunk 24: 61.72 GB/s (RDMA), 201.46 GB/s (NVL)
 ```
-FP8:  45.97 GB/s (RDMA), 150.04 GB/s (NVL)
-BF16: 60.33 GB/s (RDMA), 196.91 GB/s (NVL)
-```
-
----
 
 ## 📝 Notes
 
