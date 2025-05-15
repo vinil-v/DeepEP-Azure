@@ -1,0 +1,64 @@
+diff --git a/deep_ep/buffer.py b/deep_ep/buffer.py
+index feeb386..d81130e 100644
+--- a/deep_ep/buffer.py
++++ b/deep_ep/buffer.py
+@@ -72,6 +72,8 @@ class Buffer:
+             os.environ['NVSHMEM_IB_ENABLE_IBGDA'] = '1'
+             os.environ['NVSHMEM_IBGDA_NIC_HANDLER'] = 'gpu'
+             os.environ['NVSHMEM_IBGDA_NUM_RC_PER_PE'] = f'{num_qps_per_rank}'
++            os.environ['NVSHMEM_ENABLE_NIC_PE_MAPPING'] = '1'
++            os.environ['NVSHMEM_HCA_LIST'] = 'mlx5_ib0:1,mlx5_ib1:1,mlx5_ib2:1,mlx5_ib3:1,mlx5_ib4:1,mlx5_ib5:1,mlx5_ib6:1,mlx5_ib7:1'
+             # Make sure QP depth is always larger than the number of on-flight WRs, so that we can skip WQ slot check
+             os.environ['NVSHMEM_QP_DEPTH'] = '1024'
+             # NOTES: NVSHMEM initialization requires at least 256 MiB
+diff --git a/tests/utils.py b/tests/utils.py
+index a574366..fffa905 100644
+--- a/tests/utils.py
++++ b/tests/utils.py
+@@ -1,10 +1,34 @@
+ import os
+ import sys
++import psutil
+ import numpy as np
+ import torch
+ import torch.distributed as dist
+ from typing import Optional
+-
++import ctypes
++
++# Load libnuma
++libnuma = ctypes.CDLL("libnuma.so")
++libnuma.numa_available.restype = ctypes.c_int
++libnuma.numa_run_on_node.argtypes = [ctypes.c_int]
++libnuma.numa_set_preferred.argtypes = [ctypes.c_int]
++
++def set_numa_affinity(rank):
++    # Example: Assume NUMA node 0 → cores 0-15, node 1 → 16-31, etc.
++    cores_per_numa = 12
++    numa_node = rank // 4 
++    core_start = rank * cores_per_numa
++    core_end = core_start + cores_per_numa
++    p = psutil.Process(os.getpid())
++    p.cpu_affinity(list(range(core_start, core_end)))
++    print(f"Rank {rank} numa node {numa_node} bound to cores {core_start}-{core_end - 1}")
++
++	# Bind memory to NUMA node
++    if libnuma.numa_available() != -1:
++        libnuma.numa_set_preferred(numa_node)
++        print(f"Rank {rank}: CPU affinity → cores {core_start}-{core_end - 1}, memory NUMA → node {numa_node}")
++    else:
++        print(f"Rank {rank}: libnuma not available")
+ 
+ def init_dist(local_rank: int, num_local_ranks: int):
+     # NOTES: you may rewrite this function with your own cluster settings
+@@ -20,8 +44,10 @@ def init_dist(local_rank: int, num_local_ranks: int):
+         world_size=num_nodes * num_local_ranks,
+         rank=node_rank * num_local_ranks + local_rank
+     )
++    set_numa_affinity(local_rank)
+     torch.set_default_dtype(torch.bfloat16)
+     torch.set_default_device('cuda')
++
+     torch.cuda.set_device(local_rank)
+ 
+     return dist.get_rank(), dist.get_world_size(), dist.new_group(list(range(num_local_ranks * num_nodes)))
